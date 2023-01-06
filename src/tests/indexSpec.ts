@@ -19,4 +19,9 @@ describe("When an Image Processing endpoint is accessed.", () => {
             expect(res.body).toContain('encenadaport.jpg');
         });
     });
+    it('should be able to return an error for a wrong image.', () => {
+        request(server).get("http://localhost:3000/encenhadaport.jpg", (err, res) => {
+            expect(res.body).toContain('Image resizing Failed or Image don\'t Exist');
+        });
+    });
 });
