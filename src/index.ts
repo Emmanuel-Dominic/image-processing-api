@@ -1,33 +1,31 @@
-import express, { Express, Request, Response } from 'express';
-import fs from 'fs';
-import sharp from 'sharp';
-import multer from 'multer';
+import express, { Response, Request, NextFunction, Application, ErrorRequestHandler } from 'express';
+import createHttpError from 'http-errors';
+import imageRouter from './routes/index';
+import { Error } from './services/index';
 
-const upload = multer({dest : '/../statics/images'})
-const app: Express = express();
-const PORT: number = 3000;
+const app: Application = express();
+const PORT = 3000;
 
-app.use('/images', express.static(process.cwd() + '/statics/images'))
+app.use('/images', express.static(process.cwd() + '/public/images'));
 
-app.get('/api/images', upload.single("avatar"), (req: Request, res: Response) => {
-    const queryParam = req.query;
-    const imageDir = __dirname + `/../statics/images/`;
+app.use('/api/', imageRouter);
 
-    sharp(imageDir + `${queryParam.filename}.jpg`)
-        .resize({ width: Number(queryParam.width), height: Number(queryParam.height) }).toFile(`${imageDir}new-${queryParam.filename}.jpg`)
-        .then((newFileInfo: any) => {
-            fs.readFile(`${imageDir + 'new-' + queryParam.filename}.jpg`, (err, data) => {
-                if (err) throw err;
-                res.status(200);
-                res.writeHead(200, {'Content-Type': 'image/jpg'});
-                res.end(data);
-            });
-        })
-        .catch((err: any) => {
-            res.send('Image resizing Failed or Image don\'t Exist')
-    });
+app.use((req: Request, res: Response, next: NextFunction) => {
+    next(new createHttpError.NotFound());
 });
 
-app.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`));
+const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
+    res.status(err.status ?? 500);
+    res.send({
+        status: err.status ?? 500,
+        message: err.message,
+    });
+};
+
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
 
 export default app;
