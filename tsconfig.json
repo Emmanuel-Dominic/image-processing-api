@@ -11,7 +11,7 @@
     },
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "rootDir": ".",
+    "rootDir": "./src",
     "outDir": "dist",
     "removeComments": true,
     "esModuleInterop": true,
